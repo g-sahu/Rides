@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "617842091524",
+    "firebase_url": "https://rides-69744.firebaseio.com",
+    "project_id": "rides-69744",
+    "storage_bucket": "rides-69744.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:617842091524:android:b3c12c1f7afb7815",
+        "android_client_info": {
+          "package_name": "com.gauravsahu.rides"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "617842091524-pi10jrr43bseph4i3m7vpmn0a37mdajd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gauravsahu.rides",
+            "certificate_hash": "ce817e728a3686bfd999d048900a44019c7bd253"
+          }
+        },
+        {
+          "client_id": "617842091524-1csorq39deokes9d919117k7tkckgap9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gauravsahu.rides",
+            "certificate_hash": "c24e4b872053d11f1c0fa6b10f60418351b0df50"
+          }
+        },
+        {
+          "client_id": "617842091524-39ato12qn2fqlrr7mmi1tbg9cjn8jkpg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3ZrqjX3Y9mzbZzv7AvtOmAfgQN-KsDb4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "617842091524-39ato12qn2fqlrr7mmi1tbg9cjn8jkpg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

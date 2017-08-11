@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/fragment_find_rides"
+            android:icon="@drawable/ic_one"
+            android:title="@string/find_rides"
+            android:checked="true"/>
+        <item
+            android:id="@+id/fragment_user_account"
+            android:icon="@drawable/ic_two"
+            android:title="@string/my_account" />
+        <item
+            android:id="@+id/fragment_about"
+            android:icon="@drawable/ic_three"
+            android:title="@string/about" />
+        <item
+            android:id="@+id/fragment_logout"
+            android:icon="@drawable/ic_three"
+            android:title="@string/logout" />
+    </group>
+
+</menu>

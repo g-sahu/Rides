@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Rides</string>
+    <string name="app_logo">App Logo</string>
+    <string name="find_rides">Find Rides</string>
+    <string name="my_account">My Account</string>
+    <string name="about">About</string>
+    <string name="logout">Logout</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="profile_name">User Name</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="developer_name">Gaurav Sahu</string>
+    <string name="support_email">contact.gauravsahu@gmail.com</string>
+    <string name="default_version">version 1.0</string>
+    <string name="email_address">Email Address</string>
+    <string name="connect_with_uber">Connect with Uber</string>
+    <string name="connect_with_ola">Connect with Ola</string>
+    <string name="client_id">617842091524-39ato12qn2fqlrr7mmi1tbg9cjn8jkpg.apps.googleusercontent.com</string>
+    <string name="pick_up_hint">Pick up location</string>
+    <string name="search_title">Select Pickup Location</string>
+    <string name="search_hint">Search Pickup Location</string>
+    <string name="location">Location</string>
+</resources>
