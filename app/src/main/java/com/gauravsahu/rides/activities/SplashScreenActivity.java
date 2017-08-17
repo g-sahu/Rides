@@ -9,10 +9,10 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.gauravsahu.rides.R;
 import com.gauravsahu.rides.utilities.Messages;
+import com.gauravsahu.rides.utilities.Util;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -33,7 +33,6 @@ public class SplashScreenActivity extends AppCompatActivity implements GoogleApi
     private GoogleApiClient googleApiClient;
     private static final int RC_SIGN_IN = 9001;
     private FirebaseAuth fAuth;
-    private Toast toast;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,7 +66,7 @@ public class SplashScreenActivity extends AppCompatActivity implements GoogleApi
         FirebaseUser currentUser = fAuth.getCurrentUser();
 
         if(currentUser != null) {
-            Intent intent = new Intent(SplashScreenActivity.this, HomeActivity.class);
+            Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
             finish();
         }
@@ -83,7 +82,7 @@ public class SplashScreenActivity extends AppCompatActivity implements GoogleApi
             Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
             startActivityForResult(signInIntent, RC_SIGN_IN);
         } else {
-            showToastMessage(Messages.NO_INTERNET);
+            Util.showToastMessage(this, Messages.NO_INTERNET);
         }
     }
 
@@ -99,10 +98,10 @@ public class SplashScreenActivity extends AppCompatActivity implements GoogleApi
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = result.getSignInAccount();
                 firebaseAuthWithGoogle(account);
-                showToastMessage("Sign in success!");
+                Util.showToastMessage(this, "Sign in success!");
             } else {
                 // Google Sign In failed, update UI appropriately
-                showToastMessage("Sign in failed!");
+                Util.showToastMessage(this, "Sign in failed!");
             }
         }
     }
@@ -124,7 +123,7 @@ public class SplashScreenActivity extends AppCompatActivity implements GoogleApi
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(LOG_TAG, "Authentication failed.", task.getException());
-                            showToastMessage("Authentication failed.");
+                            Util.showToastMessage(SplashScreenActivity.this, "Authentication failed.");
                         }
                     }
                 });
@@ -134,15 +133,6 @@ public class SplashScreenActivity extends AppCompatActivity implements GoogleApi
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(LOG_TAG, "Connection failure!");
         Log.d(LOG_TAG, connectionResult.getErrorMessage());
-        showToastMessage("Connection failure!");
-    }
-
-    private void showToastMessage(String toastText) {
-        if(toast != null) {
-            toast.cancel();
-        }
-
-        toast = Toast.makeText(this, toastText, Toast.LENGTH_SHORT);
-        toast.show();
+        Util.showToastMessage(this, "Connection failure!");
     }
 }

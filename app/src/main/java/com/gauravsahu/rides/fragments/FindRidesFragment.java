@@ -115,7 +115,7 @@ public class FindRidesFragment extends Fragment
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Toast.makeText(context, "Connected to Google Play Services.", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(context, "Connected to Google Play Services.", Toast.LENGTH_SHORT).show();
 
         // Gets to GoogleMap from the MapView and does initialization stuff
         mapView.getMapAsync(this);
@@ -190,26 +190,7 @@ public class FindRidesFragment extends Fragment
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-        LatLng blr = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-        marker = googleMap.addMarker(new MarkerOptions().position(blr).title("Bengaluru"));
-                                                        //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(blr, 15));
-
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        googleMap.setMyLocationEnabled(true);
-
-        //Starting AddressLookupService to fetch address of last known location
-        Intent intent = new Intent(context, AddressLookupService.class);
-        AddressLookupResultReceiver addressReceiver = new AddressLookupResultReceiver(new Handler());
-        intent.putExtra(Constants.KEY_RECEIVER, addressReceiver);
-        intent.putExtra(Constants.KEY_LAST_LOCATION, mLastLocation);
-        context.startService(intent);
+        updateView();
     }
 
      public void updateLocation(Place place) {
@@ -223,10 +204,43 @@ public class FindRidesFragment extends Fragment
          marker = map.addMarker(new MarkerOptions().position(blr).title("Bengaluru"));
                                                     //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
          map.moveCamera(CameraUpdateFactory.newLatLngZoom(blr, 15));
-
          TextView pickupView = (TextView) ridesView.findViewById(R.id.pickup_address);
          pickupView.setText(place.getAddress());
      }
+
+    public void updateView() {
+        LatLng blr = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+
+        if(marker != null) {
+            marker.remove();
+        }
+
+        marker = map.addMarker(new MarkerOptions().position(blr).title("Bengaluru"));
+        //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(blr, 15));
+
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        map.setMyLocationEnabled(true);
+        //googleMap.setPadding(0, 0, 0, 400);
+
+        //Starting AddressLookupService to fetch address of last known location
+        Intent intent = new Intent(context, AddressLookupService.class);
+        AddressLookupResultReceiver addressReceiver = new AddressLookupResultReceiver(new Handler());
+        intent.putExtra(Constants.KEY_RECEIVER, addressReceiver);
+        intent.putExtra(Constants.KEY_LAST_LOCATION, mLastLocation);
+        context.startService(intent);
+    }
+
+    public void updateTextView(String text) {
+        TextView pickupView = (TextView) ridesView.findViewById(R.id.pickup_address);
+        pickupView.setText(text);
+    }
 
     @Override
     public void onDestroy() {
@@ -247,9 +261,8 @@ public class FindRidesFragment extends Fragment
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
-            TextView pickupView = (TextView) ridesView.findViewById(R.id.pickup_address);
             String pickupAddress = resultData.getString(Constants.KEY_RESULT_DATA);
-            pickupView.setText(pickupAddress);
+            updateTextView(pickupAddress);
         }
     }
 }

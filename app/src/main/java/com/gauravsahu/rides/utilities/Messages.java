@@ -7,5 +7,6 @@ package com.gauravsahu.rides.utilities;
 public final class Messages {
     private Messages() {}
 
-    public static final String NO_INTERNET = "No internet!";
+    public static final String NO_INTERNET = "No internet connection.";
+    public static final String INTERNET_CONNECTED = "Connected to the internet.";
 }
