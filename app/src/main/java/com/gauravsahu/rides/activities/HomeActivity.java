@@ -1,10 +1,16 @@
 package com.gauravsahu.rides.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -21,6 +27,7 @@ import com.gauravsahu.rides.R;
 import com.gauravsahu.rides.fragments.AboutFragment;
 import com.gauravsahu.rides.fragments.FindRidesFragment;
 import com.gauravsahu.rides.fragments.UserAccountFragment;
+import com.gauravsahu.rides.utilities.Messages;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
@@ -39,6 +46,8 @@ public class HomeActivity extends AppCompatActivity {
     private ActionBarDrawerToggle drawerToggle;
     private NavigationView navDrawer;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
+    private BroadcastReceiver br;
+    private boolean isInternetConnected = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +77,22 @@ public class HomeActivity extends AppCompatActivity {
 
         //Setting up Navigation Drawer header
         setupDrawerHeader(user);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        br = new NetworkConnectionReceiver();
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        intentFilter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        registerReceiver(br, intentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(br);
     }
 
     @Override
@@ -199,6 +224,44 @@ public class HomeActivity extends AppCompatActivity {
             } else if (resultCode == RESULT_CANCELED) {
                 // The user canceled the operation.
             }
+        }
+    }
+
+    private void showSnackbar(String message, int length) {
+        View view = findViewById(R.id.fragment_content);
+        Snackbar snackbar = Snackbar.make(view, message, length);
+
+        View sbView = snackbar.getView();
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(getResources().getColor(R.color.appTheme));
+        textView.setTextSize(16);
+        snackbar.show();
+    }
+
+    public class NetworkConnectionReceiver extends BroadcastReceiver {
+        public NetworkConnectionReceiver() {}
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+            boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+            boolean isFailOver = intent.getBooleanExtra(ConnectivityManager.EXTRA_IS_FAILOVER, false);
+            FindRidesFragment fragment = (FindRidesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+
+            if(isConnected) {
+                if(!isInternetConnected) {
+                    showSnackbar(Messages.INTERNET_CONNECTED, Snackbar.LENGTH_LONG);
+                    fragment.updateView();
+                }
+            } else {
+                if(!isFailOver) {
+                    showSnackbar(Messages.NO_INTERNET, Snackbar.LENGTH_INDEFINITE);
+                    fragment.updateTextView(null);
+                }
+            }
+
+            isInternetConnected = isConnected;
         }
     }
 }
