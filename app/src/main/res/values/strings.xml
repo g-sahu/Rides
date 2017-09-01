@@ -16,7 +16,8 @@
     <string name="connect_with_uber">Connect with Uber</string>
     <string name="connect_with_ola">Connect with Ola</string>
     <string name="client_id">617842091524-39ato12qn2fqlrr7mmi1tbg9cjn8jkpg.apps.googleusercontent.com</string>
-    <string name="pick_up_hint">Pick up location</string>
+    <string name="pickup_add_hint">Pick up location</string>
+    <string name="drop_add_hint">Drop location</string>
     <string name="search_title">Select Pickup Location</string>
     <string name="search_hint">Search Pickup Location</string>
     <string name="location">Location</string>

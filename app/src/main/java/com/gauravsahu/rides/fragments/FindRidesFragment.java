@@ -17,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,11 +41,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class FindRidesFragment extends Fragment
-        implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
+
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap map;
     private Location mLastLocation;
@@ -52,6 +56,9 @@ public class FindRidesFragment extends Fragment
     private MapView mapView;
     private View ridesView;
     private Marker marker;
+    private LatLng pickupLocation, dropLocation;
+    private TextView addressView;
+    private boolean isPickupLocationSet, isDropLocationSet;
 
     public FindRidesFragment() {}
 
@@ -77,6 +84,7 @@ public class FindRidesFragment extends Fragment
         // when the map is ready to be used.
         mapView = (MapView) ridesView.findViewById(R.id.mapview);
         mapView.onCreate(savedInstanceState);
+        addressView = (TextView) ridesView.findViewById(R.id.addressView);
 
         return ridesView;
     }
@@ -120,22 +128,16 @@ public class FindRidesFragment extends Fragment
         // Gets to GoogleMap from the MapView and does initialization stuff
         mapView.getMapAsync(this);
 
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: 22-Aug-17 Request for location permissions here
             return;
         }
-
-        //Displaying last known location
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         //Checking location settings
         LocationRequest mLocationRequest = createLocationRequest();
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest);
-
-        PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
 
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
@@ -145,13 +147,13 @@ public class FindRidesFragment extends Fragment
 
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
-                        // All location settings are satisfied. The client can
-                        // initialize location requests here.
+                        // All location settings are satisfied. The client can initialize location requests here.
+                        updateView();
 
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied, but this can be fixed
-                        // by showing the user a dialog.
+                        // Location settings are not satisfied,
+                        // but this can be fixed by showing the user a dialog.
                         try {
                             // Show the dialog by calling startResolutionForResult(),
                             // and check the result in onActivityResult().
@@ -181,8 +183,8 @@ public class FindRidesFragment extends Fragment
 
     protected LocationRequest createLocationRequest() {
         LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setInterval(5000);
+        mLocationRequest.setFastestInterval(2000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         return mLocationRequest;
     }
@@ -190,39 +192,42 @@ public class FindRidesFragment extends Fragment
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-        updateView();
+        map.setOnMarkerDragListener(this);
+        map.setOnMarkerClickListener(this);
     }
 
-     public void updateLocation(Place place) {
-         String name = place.getName().toString();
-         LatLng blr = place.getLatLng();
+    //Updates location based on the place selected from search results
+    public void updateLocation(Place place) {
+        String name = place.getName().toString();
+        LatLng blr = place.getLatLng();
 
-         if(marker != null) {
+        if(marker != null && !isPickupLocationSet) {
             marker.remove();
-         }
+        }
 
-         marker = map.addMarker(new MarkerOptions().position(blr).title("Bengaluru"));
-                                                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
-         map.moveCamera(CameraUpdateFactory.newLatLngZoom(blr, 15));
-         TextView pickupView = (TextView) ridesView.findViewById(R.id.pickup_address);
-         pickupView.setText(place.getAddress());
-     }
+        marker = map.addMarker(new MarkerOptions().position(blr));
+        //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
 
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(blr, 15));
+        addressView.setText(place.getAddress());
+    }
+
+    //Updates location based on the last known location
     public void updateView() {
-        LatLng blr = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
 
         if(marker != null) {
             marker.remove();
         }
 
-        marker = map.addMarker(new MarkerOptions().position(blr).title("Bengaluru"));
+        marker = map.addMarker(new MarkerOptions().position(latLng).draggable(true));
         //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(blr, 15));
 
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
@@ -233,13 +238,13 @@ public class FindRidesFragment extends Fragment
         Intent intent = new Intent(context, AddressLookupService.class);
         AddressLookupResultReceiver addressReceiver = new AddressLookupResultReceiver(new Handler());
         intent.putExtra(Constants.KEY_RECEIVER, addressReceiver);
-        intent.putExtra(Constants.KEY_LAST_LOCATION, mLastLocation);
+        intent.putExtra(Constants.KEY_LAST_LOCATION, latLng);
         context.startService(intent);
     }
 
-    public void updateTextView(String text) {
-        TextView pickupView = (TextView) ridesView.findViewById(R.id.pickup_address);
-        pickupView.setText(text);
+    //Updates location address text view
+    public void updateAddressTextView(String text) {
+        addressView.setText(text);
     }
 
     @Override
@@ -254,6 +259,54 @@ public class FindRidesFragment extends Fragment
         mapView.onLowMemory();
     }
 
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        LatLng latLng = marker.getPosition();
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
+        //Starting AddressLookupService to fetch address of last known location
+        AddressLookupResultReceiver addressReceiver = new AddressLookupResultReceiver(new Handler());
+        Intent intent = new Intent(context, AddressLookupService.class)
+                .putExtra(Constants.KEY_RECEIVER, addressReceiver)
+                .putExtra(Constants.KEY_LAST_LOCATION, latLng);
+
+        context.startService(intent);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        if(!isPickupLocationSet) {
+            pickupLocation = marker.getPosition();
+            isPickupLocationSet = true;
+            updateAddressTextView(null);
+            addressView.setHint(R.string.drop_add_hint);
+        } else {
+            dropLocation = marker.getPosition();
+            isDropLocationSet = true;
+
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(pickupLocation).include(dropLocation);
+            LatLngBounds bounds = builder.build();
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+
+            addressView.setVisibility(View.GONE);
+            Button findRidesButton = (Button) ridesView.findViewById(R.id.findRides);
+            findRidesButton.setVisibility(View.VISIBLE);
+        }
+
+        return true;
+    }
+
     class AddressLookupResultReceiver extends ResultReceiver {
         AddressLookupResultReceiver(Handler handler) {
             super(handler);
@@ -262,7 +315,7 @@ public class FindRidesFragment extends Fragment
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             String pickupAddress = resultData.getString(Constants.KEY_RESULT_DATA);
-            updateTextView(pickupAddress);
+            updateAddressTextView(pickupAddress);
         }
     }
 }
