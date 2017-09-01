@@ -4,11 +4,11 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
 import com.gauravsahu.rides.utilities.Constants;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,10 +32,10 @@ public class AddressLookupService extends IntentService {
         String comma = ", ", addressLine1, addressLine2, finalAddress = "";
 
         try {
-            Location lastLocation = intent.getParcelableExtra(Constants.KEY_LAST_LOCATION);
+            LatLng lastLocation = intent.getParcelableExtra(Constants.KEY_LAST_LOCATION);
             addressReceiver = intent.getParcelableExtra(Constants.KEY_RECEIVER);
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            addresses = geocoder.getFromLocation(lastLocation.getLatitude(), lastLocation.getLongitude(), 1);
+            addresses = geocoder.getFromLocation(lastLocation.latitude, lastLocation.longitude, 1);
 
             address = addresses.get(0);
             int addressLines = address.getMaxAddressLineIndex();
