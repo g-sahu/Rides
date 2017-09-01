@@ -31,6 +31,7 @@ import com.gauravsahu.rides.utilities.Messages;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
@@ -45,7 +46,7 @@ public class HomeActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private ActionBarDrawerToggle drawerToggle;
     private NavigationView navDrawer;
-    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
+    private final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
     private BroadcastReceiver br;
     private boolean isInternetConnected = true;
 
@@ -188,7 +189,11 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        drawerLayout.closeDrawer(navDrawer);
+        if(drawerLayout.isDrawerOpen(navDrawer)) {
+            drawerLayout.closeDrawer(navDrawer);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     public void showSearchActivity(View view) {
@@ -208,22 +213,36 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                Place place = PlaceAutocomplete.getPlace(this, data);
+        super.onActivityResult(requestCode, resultCode, data);
 
-                FindRidesFragment fragment = (FindRidesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_content);
-                fragment.updateLocation(place);
+        //if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+        switch(requestCode) {
+            case PLACE_AUTOCOMPLETE_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    Place place = PlaceAutocomplete.getPlace(this, data);
 
-                Log.i(LOG_TAG, "Place: " + place.getName());
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(this, data);
-                // TODO: Handle the error.
-                Log.i(LOG_TAG, status.getStatusMessage());
+                    FindRidesFragment fragment = (FindRidesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+                    fragment.updateLocation(place);
 
-            } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
-            }
+                    Log.i(LOG_TAG, "Place: " + place.getName());
+                } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                    Status status = PlaceAutocomplete.getStatus(this, data);
+                    // TODO: Handle the error.
+                    Log.i(LOG_TAG, status.getStatusMessage());
+
+                } else if (resultCode == RESULT_CANCELED) {
+                    // The user canceled the operation.
+                }
+
+                break;
+
+            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                if (resultCode == RESULT_OK) {
+                    FindRidesFragment fragment = (FindRidesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+                    fragment.updateView();
+                } else if (resultCode == RESULT_CANCELED) {
+                    // The user canceled the operation.
+                }
         }
     }
 
@@ -257,7 +276,7 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 if(!isFailOver) {
                     showSnackbar(Messages.NO_INTERNET, Snackbar.LENGTH_INDEFINITE);
-                    fragment.updateTextView(null);
+                    fragment.updateAddressTextView(null);
                 }
             }
 
