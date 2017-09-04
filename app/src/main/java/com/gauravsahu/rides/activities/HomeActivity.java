@@ -27,6 +27,7 @@ import com.gauravsahu.rides.R;
 import com.gauravsahu.rides.fragments.AboutFragment;
 import com.gauravsahu.rides.fragments.FindRidesFragment;
 import com.gauravsahu.rides.fragments.UserAccountFragment;
+import com.gauravsahu.rides.utilities.Constants;
 import com.gauravsahu.rides.utilities.Messages;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -189,10 +190,27 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        FindRidesFragment findRidesFragment = (FindRidesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+
         if(drawerLayout.isDrawerOpen(navDrawer)) {
             drawerLayout.closeDrawer(navDrawer);
         } else {
-            super.onBackPressed();
+            switch(findRidesFragment.getRideStatus()) {
+                case Constants.PICKUP_CONFIRMED:
+                    findRidesFragment.unconfirmPickupLocation();
+                    break;
+
+                case Constants.DROP_SELECTED:
+                    findRidesFragment.deselectDropLocation();
+                    break;
+
+                case Constants.DROP_CONFIRMED:
+                    findRidesFragment.unconfirmDropLocation();
+                    break;
+
+                default:
+                    super.onBackPressed();
+            }
         }
     }
 
