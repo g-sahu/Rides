@@ -20,4 +20,9 @@ public final class Constants {
 
     public static final int KEY_SUCCESS = 1;
     public static final int KEY_FAILURE = 0;
+
+    public static final String PICKUP_SELECTED = "PICKUP_SELECTED";
+    public static final String PICKUP_CONFIRMED = "PICKUP_CONFIRMED";
+    public static final String DROP_SELECTED = "DROP_SELECTED";
+    public static final String DROP_CONFIRMED = "DROP_CONFIRMED";
 }
