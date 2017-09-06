@@ -231,15 +231,8 @@ public class FindRidesFragment extends Fragment
 
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-
         selectPickupLocation(latLng);
-
-        //Starting AddressLookupService to fetch address of last known location
-        Intent intent = new Intent(context, AddressLookupService.class);
-        AddressLookupResultReceiver addressReceiver = new AddressLookupResultReceiver(new Handler());
-        intent.putExtra(Constants.KEY_RECEIVER, addressReceiver);
-        intent.putExtra(Constants.KEY_LAST_LOCATION, latLng);
-        context.startService(intent);
+        callAddressLookupService(latLng);
     }
 
     //Updates location address text view
@@ -273,14 +266,7 @@ public class FindRidesFragment extends Fragment
     public void onMarkerDragEnd(Marker marker) {
         LatLng latLng = marker.getPosition();
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-
-        //Starting AddressLookupService to fetch address of last known location
-        AddressLookupResultReceiver addressReceiver = new AddressLookupResultReceiver(new Handler());
-        Intent intent = new Intent(context, AddressLookupService.class)
-                .putExtra(Constants.KEY_RECEIVER, addressReceiver)
-                .putExtra(Constants.KEY_LAST_LOCATION, latLng);
-
-        context.startService(intent);
+        callAddressLookupService(latLng);
     }
 
     @Override
@@ -373,6 +359,15 @@ public class FindRidesFragment extends Fragment
         findRidesButton.setVisibility(View.GONE);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(dropLocation, 15));
         dropLocation = null;
+    }
+
+    public void callAddressLookupService(LatLng latLng) {
+        AddressLookupResultReceiver addressReceiver = new AddressLookupResultReceiver(new Handler());
+        Intent intent = new Intent(context, AddressLookupService.class)
+                .putExtra(Constants.KEY_RECEIVER, addressReceiver)
+                .putExtra(Constants.KEY_LAST_LOCATION, latLng);
+
+        context.startService(intent);
     }
 
     public String getRideStatus() {
