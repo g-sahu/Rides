@@ -47,7 +47,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class FindRidesFragment extends Fragment
         implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnMyLocationButtonClickListener {
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap map;
@@ -192,6 +192,7 @@ public class FindRidesFragment extends Fragment
         map = googleMap;
         map.setOnMarkerDragListener(this);
         map.setOnMarkerClickListener(this);
+        map.setOnMyLocationButtonClickListener(this);
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -205,49 +206,45 @@ public class FindRidesFragment extends Fragment
     //Updates location based on the place selected from search results
     public void updateLocation(Place place) {
         String name = place.getName().toString();
-        LatLng latLng = place.getLatLng();
 
         switch(rideStatus) {
-            case Constants.PICKUP_CONFIRMED:
-                if(dropMarker != null) {
-                    dropMarker.remove();
-                }
-
-                dropMarker = map.addMarker(new MarkerOptions().position(latLng));
-                                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
-                rideStatus = Constants.DROP_SELECTED;
-                break;
-
             case Constants.PICKUP_SELECTED:
                 if(pickupMarker != null) {
                     pickupMarker.remove();
                 }
 
-                pickupMarker = map.addMarker(new MarkerOptions().position(latLng));
+                pickupLocation = place.getLatLng();
+                pickupMarker = map.addMarker(new MarkerOptions().position(pickupLocation));
                                     //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(pickupLocation, 15));
+                break;
+
+            case Constants.PICKUP_CONFIRMED:
+                if(dropMarker != null) {
+                    dropMarker.remove();
+                }
+
+                dropLocation = place.getLatLng();
+                dropMarker = map.addMarker(new MarkerOptions().position(dropLocation));
+                                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(dropLocation, 15));
+                rideStatus = Constants.DROP_SELECTED;
                 break;
 
             case Constants.DROP_SELECTED:
-                if(pickupMarker != null) {
-                    pickupMarker.remove();
+                if(dropMarker != null) {
+                    dropMarker.remove();
                 }
 
-                pickupMarker = map.addMarker(new MarkerOptions().position(latLng));
+                dropLocation = place.getLatLng();
+                dropMarker = map.addMarker(new MarkerOptions().position(dropLocation));
                                     //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
-                break;
-
-            case Constants.DROP_CONFIRMED:
-                if(pickupMarker != null) {
-                    pickupMarker.remove();
-                }
-
-                pickupMarker = map.addMarker(new MarkerOptions().position(latLng));
-                                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(dropLocation, 15));
+                rideStatus = Constants.DROP_SELECTED;
                 break;
         }
 
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-        addressView.setText(place.getAddress());
+        addressView.setText(name);
     }
 
     //Updates location based on the last known location
@@ -373,7 +370,7 @@ public class FindRidesFragment extends Fragment
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(pickupLocation).include(dropLocation);
         LatLngBounds bounds = builder.build();
-        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 200));
     }
 
     public void unconfirmDropLocation() {
@@ -388,6 +385,25 @@ public class FindRidesFragment extends Fragment
 
     public String getRideStatus() {
         return rideStatus;
+    }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        switch(rideStatus) {
+            case Constants.DROP_SELECTED:
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(dropLocation, 15));
+                return true;
+
+            case Constants.DROP_CONFIRMED:
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                builder.include(pickupLocation).include(dropLocation);
+                LatLngBounds bounds = builder.build();
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 200));
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     class AddressLookupResultReceiver extends ResultReceiver {
