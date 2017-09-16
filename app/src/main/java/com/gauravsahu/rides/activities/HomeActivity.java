@@ -13,6 +13,7 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -48,8 +49,9 @@ public class HomeActivity extends AppCompatActivity {
     private ActionBarDrawerToggle drawerToggle;
     private NavigationView navDrawer;
     private final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
-    private BroadcastReceiver br;
+    private BroadcastReceiver netConnReceiver;
     private boolean isInternetConnected = true;
+    private Fragment ridesFragment, userFragment, aboutFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +75,11 @@ public class HomeActivity extends AppCompatActivity {
 
         //Setting up the default fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fragment_content, new FindRidesFragment()).commit();
+        ridesFragment = new FindRidesFragment();
+        fragmentManager.beginTransaction().replace(R.id.fragment_content, ridesFragment).commit();
         setTitle("Find Rides");
+
+        //Getting currently signed in user
         FirebaseUser user = getSignedInUser();
 
         //Setting up Navigation Drawer header
@@ -85,16 +90,16 @@ public class HomeActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        br = new NetworkConnectionReceiver();
+        netConnReceiver = new NetworkConnectionReceiver();
         IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         intentFilter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
-        registerReceiver(br, intentFilter);
+        registerReceiver(netConnReceiver, intentFilter);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiver(br);
+        unregisterReceiver(netConnReceiver);
     }
 
     @Override
@@ -114,19 +119,67 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
-        Fragment fragment;
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
         switch(menuItem.getItemId()) {
             case R.id.fragment_find_rides:
-                fragment = new FindRidesFragment();
+                ridesFragment = (ridesFragment == null) ? new FindRidesFragment() : ridesFragment;
+
+                // Replacing/Showing fragments
+                if(ridesFragment.isAdded()) {
+                    if (userFragment != null && userFragment.isAdded()) {
+                        fragmentTransaction.hide(userFragment);
+                    }
+
+                    if (aboutFragment != null && aboutFragment.isAdded()) {
+                        fragmentTransaction.hide(aboutFragment);
+                    }
+
+                    fragmentTransaction.show(ridesFragment);
+                } else {
+                    fragmentTransaction.add(R.id.fragment_content, ridesFragment);
+                }
+
                 break;
 
             case R.id.fragment_user_account:
-                fragment = new UserAccountFragment();
+                userFragment = (userFragment == null) ? new UserAccountFragment() : userFragment;
+
+                // Replacing/Showing fragments
+                if(userFragment.isAdded()) {
+                    if (ridesFragment != null && ridesFragment.isAdded()) {
+                        fragmentTransaction.hide(ridesFragment);
+                    }
+
+                    if (aboutFragment != null && aboutFragment.isAdded()) {
+                        fragmentTransaction.hide(aboutFragment);
+                    }
+
+                    fragmentTransaction.show(userFragment);
+                } else {
+                    fragmentTransaction.add(R.id.fragment_content, userFragment);
+                }
+
                 break;
 
             case R.id.fragment_about:
-                fragment = new AboutFragment();
+                aboutFragment = (aboutFragment == null) ? new AboutFragment() : aboutFragment;
+
+                // Replacing/Showing fragments
+                if(aboutFragment.isAdded()) {
+                    if (userFragment != null && userFragment.isAdded()) {
+                        fragmentTransaction.hide(userFragment);
+                    }
+
+                    if (ridesFragment != null && ridesFragment.isAdded()) {
+                        fragmentTransaction.hide(ridesFragment);
+                    }
+
+                    fragmentTransaction.show(aboutFragment);
+                } else {
+                    fragmentTransaction.add(R.id.fragment_content, aboutFragment);
+                }
+
                 break;
 
             case R.id.fragment_logout:
@@ -136,12 +189,25 @@ public class HomeActivity extends AppCompatActivity {
                 finish();
 
             default:
-                fragment = new FindRidesFragment();
+                ridesFragment = (ridesFragment == null) ? new FindRidesFragment() : ridesFragment;
+
+                // Replacing/Showing fragments
+                if(ridesFragment.isAdded()) {
+                    if (userFragment != null && userFragment.isAdded()) {
+                        fragmentTransaction.hide(userFragment);
+                    }
+
+                    if (aboutFragment != null && aboutFragment.isAdded()) {
+                        fragmentTransaction.hide(aboutFragment);
+                    }
+
+                    fragmentTransaction.show(ridesFragment);
+                } else {
+                    fragmentTransaction.add(R.id.fragment_content, ridesFragment);
+                }
         }
 
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fragment_content, fragment).commit();
+        fragmentTransaction.commit();
 
         // Highlight the selected item has been done by NavigationView
         menuItem.setChecked(true);
@@ -233,7 +299,6 @@ public class HomeActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        //if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
         switch(requestCode) {
             case PLACE_AUTOCOMPLETE_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
