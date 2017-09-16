@@ -73,6 +73,7 @@ public class FindRidesFragment extends Fragment
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
+                    //.enableAutoManage(getActivity(), this)
                     .build();
         }
     }
@@ -146,9 +147,12 @@ public class FindRidesFragment extends Fragment
 
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
-                        updateView();
+                        if(pickupMarker == null) {
+                            updateView();
+                        }
 
                         break;
+
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                         // Location settings are not satisfied,
                         // but this can be fixed by showing the user a dialog.
@@ -160,6 +164,7 @@ public class FindRidesFragment extends Fragment
                             // Ignore the error.
                         }
                         break;
+
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         // Location settings are not satisfied. However, we have no way
                         // to fix the settings so we won't show the dialog.
@@ -265,7 +270,21 @@ public class FindRidesFragment extends Fragment
     @Override
     public void onMarkerDragEnd(Marker marker) {
         LatLng latLng = marker.getPosition();
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
+        switch(rideStatus) {
+            case Constants.PICKUP_SELECTED:
+                selectPickupLocation(latLng);
+                break;
+
+            case Constants.PICKUP_CONFIRMED:
+                selectDropLocation(latLng);
+                break;
+
+            case Constants.DROP_SELECTED:
+                selectDropLocation(latLng);
+                break;
+        }
+
         callAddressLookupService(latLng);
     }
 
@@ -293,7 +312,7 @@ public class FindRidesFragment extends Fragment
             pickupMarker.remove();
         }
 
-        pickupMarker = map.addMarker(new MarkerOptions().position(pickupLocation));
+        pickupMarker = map.addMarker(new MarkerOptions().position(pickupLocation).draggable(true));
         //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(pickupLocation, 15));
     }
@@ -305,6 +324,8 @@ public class FindRidesFragment extends Fragment
         pickupAddress = pickupAddress == null ? addressView.getText().toString() : pickupAddress;
         pickupMarker.setDraggable(false);
         updateAddressTextView(null);
+
+        selectDropLocation(latLng);
     }
 
     public void unconfirmPickupLocation() {
@@ -319,7 +340,7 @@ public class FindRidesFragment extends Fragment
         }
 
         dropLocation = latLng;
-        dropMarker = map.addMarker(new MarkerOptions().position(dropLocation));
+        dropMarker = map.addMarker(new MarkerOptions().position(dropLocation).draggable(true));
         //.icon(BitmapDescriptorFactory.fromResource(R.drawable.set_pickup_marker)));
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(dropLocation, 15));
         rideStatus = Constants.DROP_SELECTED;
