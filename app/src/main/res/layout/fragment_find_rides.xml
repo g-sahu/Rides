@@ -34,7 +34,7 @@
         android:id="@+id/findRides"
         android:layout_width="200dp"
         android:layout_height="50dp"
-        android:text="Find Rides"
+        android:text="@string/find_rides"
         android:background="@color/appTheme"
         android:textColor="#000000"
         android:gravity="center"
