@@ -76,7 +76,7 @@ public class HomeActivity extends AppCompatActivity {
         //Setting up the default fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
         ridesFragment = new FindRidesFragment();
-        fragmentManager.beginTransaction().replace(R.id.fragment_content, ridesFragment).commit();
+        fragmentManager.beginTransaction().replace(R.id.fragment_content, ridesFragment, Constants.TAG_FIND_RIDES_FRAGMENT).commit();
         setTitle("Find Rides");
 
         //Getting currently signed in user
@@ -137,7 +137,7 @@ public class HomeActivity extends AppCompatActivity {
 
                     fragmentTransaction.show(ridesFragment);
                 } else {
-                    fragmentTransaction.add(R.id.fragment_content, ridesFragment);
+                    fragmentTransaction.add(R.id.fragment_content, ridesFragment, Constants.TAG_FIND_RIDES_FRAGMENT);
                 }
 
                 break;
@@ -157,7 +157,7 @@ public class HomeActivity extends AppCompatActivity {
 
                     fragmentTransaction.show(userFragment);
                 } else {
-                    fragmentTransaction.add(R.id.fragment_content, userFragment);
+                    fragmentTransaction.add(R.id.fragment_content, userFragment, Constants.TAG_USER_ACCOUNT_FRAGMENT);
                 }
 
                 break;
@@ -177,7 +177,7 @@ public class HomeActivity extends AppCompatActivity {
 
                     fragmentTransaction.show(aboutFragment);
                 } else {
-                    fragmentTransaction.add(R.id.fragment_content, aboutFragment);
+                    fragmentTransaction.add(R.id.fragment_content, aboutFragment, Constants.TAG_ABOUT_FRAGMENT);
                 }
 
                 break;
@@ -203,7 +203,7 @@ public class HomeActivity extends AppCompatActivity {
 
                     fragmentTransaction.show(ridesFragment);
                 } else {
-                    fragmentTransaction.add(R.id.fragment_content, ridesFragment);
+                    fragmentTransaction.add(R.id.fragment_content, ridesFragment, Constants.TAG_FIND_RIDES_FRAGMENT);
                 }
         }
 
@@ -256,27 +256,43 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        FindRidesFragment findRidesFragment = (FindRidesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+        String fragmentTag = fragment.getTag();
 
-        if(drawerLayout.isDrawerOpen(navDrawer)) {
-            drawerLayout.closeDrawer(navDrawer);
-        } else {
-            switch(findRidesFragment.getRideStatus()) {
-                case Constants.PICKUP_CONFIRMED:
-                    findRidesFragment.unconfirmPickupLocation();
-                    break;
+        switch(fragmentTag) {
+            case Constants.TAG_FIND_RIDES_FRAGMENT:
+                FindRidesFragment findRidesFragment = (FindRidesFragment) fragment;
 
-                case Constants.DROP_SELECTED:
-                    findRidesFragment.deselectDropLocation();
-                    break;
+                if (drawerLayout.isDrawerOpen(navDrawer)) {
+                    drawerLayout.closeDrawer(navDrawer);
+                } else {
+                    switch (findRidesFragment.getRideStatus()) {
+                        case Constants.PICKUP_CONFIRMED:
+                            findRidesFragment.unconfirmPickupLocation();
+                            break;
 
-                case Constants.DROP_CONFIRMED:
-                    findRidesFragment.unconfirmDropLocation();
-                    break;
+                        case Constants.DROP_SELECTED:
+                            findRidesFragment.deselectDropLocation();
+                            break;
 
-                default:
-                    super.onBackPressed();
-            }
+                        case Constants.DROP_CONFIRMED:
+                            findRidesFragment.unconfirmDropLocation();
+                            break;
+
+                        default:
+                            super.onBackPressed();
+                    }
+                }
+
+                break;
+
+            case Constants.TAG_USER_ACCOUNT_FRAGMENT:
+                selectDrawerItem(navDrawer.getMenu().getItem(0));
+                break;
+
+            case Constants.TAG_ABOUT_FRAGMENT:
+                selectDrawerItem(navDrawer.getMenu().getItem(0));
+                break;
         }
     }
 

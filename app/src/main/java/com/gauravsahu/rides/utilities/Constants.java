@@ -25,4 +25,8 @@ public final class Constants {
     public static final String PICKUP_CONFIRMED = "PICKUP_CONFIRMED";
     public static final String DROP_SELECTED = "DROP_SELECTED";
     public static final String DROP_CONFIRMED = "DROP_CONFIRMED";
+
+    public static final String TAG_FIND_RIDES_FRAGMENT = "FIND_RIDES_FRAGMENT";
+    public static final String TAG_USER_ACCOUNT_FRAGMENT = "USER_ACCOUNT_FRAGMENT";
+    public static final String TAG_ABOUT_FRAGMENT = "ABOUT_FRAGMENT";
 }
