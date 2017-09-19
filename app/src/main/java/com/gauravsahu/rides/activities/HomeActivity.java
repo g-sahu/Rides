@@ -256,16 +256,16 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_content);
-        String fragmentTag = fragment.getTag();
+        if (drawerLayout.isDrawerOpen(navDrawer)) {
+            drawerLayout.closeDrawer(navDrawer);
+        } else {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+            String fragmentTag = fragment.getTag();
 
-        switch(fragmentTag) {
-            case Constants.TAG_FIND_RIDES_FRAGMENT:
-                FindRidesFragment findRidesFragment = (FindRidesFragment) fragment;
+            switch (fragmentTag) {
+                case Constants.TAG_FIND_RIDES_FRAGMENT:
+                    FindRidesFragment findRidesFragment = (FindRidesFragment) fragment;
 
-                if (drawerLayout.isDrawerOpen(navDrawer)) {
-                    drawerLayout.closeDrawer(navDrawer);
-                } else {
                     switch (findRidesFragment.getRideStatus()) {
                         case Constants.PICKUP_CONFIRMED:
                             findRidesFragment.unconfirmPickupLocation();
@@ -282,17 +282,15 @@ public class HomeActivity extends AppCompatActivity {
                         default:
                             super.onBackPressed();
                     }
-                }
 
-                break;
+                    break;
 
-            case Constants.TAG_USER_ACCOUNT_FRAGMENT:
-                selectDrawerItem(navDrawer.getMenu().getItem(0));
-                break;
+                case Constants.TAG_USER_ACCOUNT_FRAGMENT:
 
-            case Constants.TAG_ABOUT_FRAGMENT:
-                selectDrawerItem(navDrawer.getMenu().getItem(0));
-                break;
+                case Constants.TAG_ABOUT_FRAGMENT:
+                    selectDrawerItem(navDrawer.getMenu().getItem(0));
+                    break;
+            }
         }
     }
 
