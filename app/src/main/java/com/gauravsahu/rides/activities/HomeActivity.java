@@ -126,7 +126,7 @@ public class HomeActivity extends AppCompatActivity {
                 ridesFragment = (ridesFragment == null) ? new FindRidesFragment() : ridesFragment;
 
                 // Replacing/Showing fragments
-                if(ridesFragment.isAdded()) {
+                /*if(ridesFragment.isAdded()) {
                     if (userFragment != null && userFragment.isAdded()) {
                         fragmentTransaction.hide(userFragment);
                     }
@@ -138,7 +138,9 @@ public class HomeActivity extends AppCompatActivity {
                     fragmentTransaction.show(ridesFragment);
                 } else {
                     fragmentTransaction.add(R.id.fragment_content, ridesFragment, Constants.TAG_FIND_RIDES_FRAGMENT);
-                }
+                }*/
+
+                fragmentTransaction.replace(R.id.fragment_content, ridesFragment, Constants.TAG_FIND_RIDES_FRAGMENT);
 
                 break;
 
@@ -363,17 +365,26 @@ public class HomeActivity extends AppCompatActivity {
             NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
             boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
             boolean isFailOver = intent.getBooleanExtra(ConnectivityManager.EXTRA_IS_FAILOVER, false);
-            FindRidesFragment fragment = (FindRidesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_content);
 
             if(isConnected) {
                 if(!isInternetConnected) {
                     showSnackbar(Messages.INTERNET_CONNECTED, Snackbar.LENGTH_LONG);
-                    fragment.updateView();
+                    Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+
+                    if(fragment.getTag().equals(Constants.TAG_FIND_RIDES_FRAGMENT)) {
+                        FindRidesFragment findRidesFragment = (FindRidesFragment) fragment;
+                        findRidesFragment.updateView();
+                    }
                 }
             } else {
                 if(!isFailOver) {
                     showSnackbar(Messages.NO_INTERNET, Snackbar.LENGTH_INDEFINITE);
-                    fragment.updateAddressTextView(null);
+                    Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_content);
+
+                    if(fragment.getTag().equals(Constants.TAG_FIND_RIDES_FRAGMENT)) {
+                        FindRidesFragment findRidesFragment = (FindRidesFragment) fragment;
+                        findRidesFragment.updateAddressTextView(null);
+                    }
                 }
             }
 
