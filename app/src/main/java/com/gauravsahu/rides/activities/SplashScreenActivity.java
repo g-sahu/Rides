@@ -112,21 +112,21 @@ public class SplashScreenActivity extends AppCompatActivity implements GoogleApi
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
 
         fAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Signed in successfully, show authenticated UI.
-                            Intent intent = new Intent(SplashScreenActivity.this, HomeActivity.class);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(LOG_TAG, "Authentication failed.", task.getException());
-                            Util.showToastMessage(SplashScreenActivity.this, "Authentication failed.");
-                        }
-                    }
-                });
+             .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                 @Override
+                 public void onComplete(@NonNull Task<AuthResult> task) {
+                     if (task.isSuccessful()) {
+                         // Signed in successfully, show authenticated UI.
+                         Intent intent = new Intent(SplashScreenActivity.this, HomeActivity.class);
+                         startActivity(intent);
+                         finish();
+                     } else {
+                         // If sign in fails, display a message to the user.
+                         Log.w(LOG_TAG, "Authentication failed.", task.getException());
+                         Util.showToastMessage(SplashScreenActivity.this, "Authentication failed.");
+                     }
+                 }
+             });
     }
 
     @Override

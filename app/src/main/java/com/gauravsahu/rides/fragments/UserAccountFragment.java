@@ -38,8 +38,8 @@ public class UserAccountFragment extends Fragment {
 
         //Setting profile photo
         Glide.with(this)
-                .load(user.getPhotoUrl())
-                .into(profilePicView);
+             .load(user.getPhotoUrl())
+             .into(profilePicView);
 
         //Setting profile name
         profileNameView.setText(user.getDisplayName());
